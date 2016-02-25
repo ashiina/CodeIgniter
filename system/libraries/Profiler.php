@@ -545,26 +545,27 @@ class CI_Profiler {
 	 */
 	public function run()
 	{
-		$output = '<div id="codeigniter_profiler" style="clear:both;background-color:#fff;padding:10px;">';
 		$fields_displayed = 0;
+		$data = [];
 
 		foreach ($this->_available_sections as $section)
 		{
 			if ($this->_compile_{$section} !== FALSE)
 			{
 				$func = '_compile_'.$section;
-				$output .= $this->{$func}();
+				$data[$section] = $this->{$func}();
 				$fields_displayed++;
 			}
 		}
 
-		if ($fields_displayed === 0)
-		{
-			$output .= '<p style="border:1px solid #5a0099;padding:10px;margin:20px 0;background-color:#eee;">'
-				.$this->CI->lang->line('profiler_no_profiles').'</p>';
-		}
+		$templates_path = VIEWPATH.'profiler'.DIRECTORY_SEPARATOR.'profiler_template';
+		ob_start();
+		echo $templates_path;
+		include($templates_path.'.php');
+		$template = ob_get_contents();
+		ob_end_clean();
 
-		return $output.'</div>';
+		return $template;
 	}
 
 }
