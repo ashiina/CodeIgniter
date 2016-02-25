@@ -166,25 +166,9 @@ class CI_Profiler {
 			}
 		}
 
-		// Build a table containing the profile data.
-		// Note: At some point we should turn this into a template that can
-		// be modified. We also might want to make this data available to be logged
-
-		$output = "\n\n"
-			.'<fieldset id="ci_profiler_benchmarks" style="border:1px solid #900;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">'
-			."\n"
-			.'<legend style="color:#900;">&nbsp;&nbsp;'.$this->CI->lang->line('profiler_benchmarks')."&nbsp;&nbsp;</legend>"
-			."\n\n\n<table style=\"width:100%;\">\n";
-
-		foreach ($profile as $key => $val)
-		{
-			$key = ucwords(str_replace(array('_', '-'), ' ', $key));
-			$output .= '<tr><td style="padding:5px;width:50%;color:#000;font-weight:bold;background-color:#ddd;">'
-					.$key.'&nbsp;&nbsp;</td><td style="padding:5px;width:50%;color:#900;font-weight:normal;background-color:#ddd;">'
-					.$val."</td></tr>\n";
-		}
-
-		return $output."</table>\n</fieldset>";
+		return array(
+			'profile' => $profile
+		);
 	}
 
 	// --------------------------------------------------------------------
