@@ -420,13 +420,10 @@ class CI_Profiler {
 	 */
 	protected function _compile_memory_usage()
 	{
-		return "\n\n"
-			.'<fieldset id="ci_profiler_memory_usage" style="border:1px solid #5a0099;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">'
-			."\n"
-			.'<legend style="color:#5a0099;">&nbsp;&nbsp;'.$this->CI->lang->line('profiler_memory_usage')."&nbsp;&nbsp;</legend>\n"
-			.'<div style="color:#5a0099;font-weight:normal;padding:4px 0 4px 0;">'
-			.(($usage = memory_get_usage()) != '' ? number_format($usage).' bytes' : $this->CI->lang->line('profiler_no_memory'))
-			.'</div></fieldset>';
+		$usage = number_format(memory_get_usage());
+		return array(
+			'usage' => $usage
+		);
 	}
 
 	// --------------------------------------------------------------------
