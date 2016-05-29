@@ -8,7 +8,7 @@
 	</legend>
 
 	<table style="width:100%;">
-	<?php	foreach ($data['benchmarks']['profile'] as $key => $val): ?>
+	<?php	foreach ($data['benchmarks'] as $key => $val): ?>
 		<?php $key = ucwords(str_replace(array('_', '-'), ' ', $key)) ?>
 		<tr>
 			<td style="padding:5px;width:50%;color:#000;font-weight:bold;background-color:#ddd;">
@@ -26,12 +26,12 @@
 	<legend style="color:#cd6e00;">
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_get_data'); ?>&nbsp;&nbsp;
 	</legend>
-	<?php if (count($data['get']['get']) === 0): ?> 
+	<?php if (count($data['get']) === 0): ?> 
 	<div style="color:#cd6e00;font-weight:normal;padding:4px 0 4px 0;">
 		<?php echo $this->CI->lang->line('profiler_no_get'); ?>
 	</div>
 	<?php else: ?>
-		<?php foreach ($data['get']['get'] as $key => $val): ?>
+		<?php foreach ($data['get'] as $key => $val): ?>
 			<?php is_int($key) OR $key = "'".$key."'"; ?>
 		<tr>
 			<td style="width:50%;color:#000;background-color:#ddd;padding:5px;">
@@ -54,8 +54,8 @@
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_memory_usage'); ?>&nbsp;&nbsp;
 	</legend>
 	<div style="color:#5a0099;font-weight:normal;padding:4px 0 4px 0;">
-	<?php if ($data['memory_usage']['usage'] > 0): ?>
-		<?php echo $data['memory_usage']['usage']; ?>
+	<?php if ($data['memory_usage'] > 0): ?>
+		<?php echo $data['memory_usage']; ?>
 	<?php else: ?>
 		<?php echo $this->CI->lang->line('profiler_no_memory'); ?>
 	<?php endif ?>
@@ -120,11 +120,11 @@
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_controller_info'); ?>&nbsp;&nbsp;
 	</legend>
 	<div style="color:#995300;font-weight:normal;padding:4px 0 4px 0;">
-		<?php echo $data['controller_info']['info'] ?>
+		<?php echo $data['controller_info'] ?>
 	</div>
 	</fieldset>
 
-	<?php if (count($data['queries']['dbs']) === 0): ?>
+	<?php if (count($data['queries']) === 0): ?>
 	<fieldset id="ci_profiler_queries" style="border:1px solid #0000FF;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
 	<legend style="color:#0000FF;">
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_queries'); ?>&nbsp;&nbsp;
@@ -138,7 +138,7 @@
 	</table>
 	</fieldset>
 	<?php else: ?>
-		<?php foreach ($data['queries']['dbs'] as $name => $row): ?>
+		<?php foreach ($data['queries'] as $name => $row): ?>
 		<fieldset style="border:1px solid #0000FF;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
 			<legend style="color:#0000FF;">&nbsp;&nbsp;
 				<?php echo $this->CI->lang->line('profiler_database'); ?>:&nbsp; 
@@ -172,10 +172,13 @@
 						<?php echo $query['time']; ?>
 					</td>
 					<td style="padding:5px;color:#000;font-weight:normal;background-color:#ddd;">
-					<?php $highlight = array('SELECT', 'DISTINCT', 'FROM', 'WHERE', 'AND', 'LEFT&nbsp;JOIN', 'ORDER&nbsp;BY', 'GROUP&nbsp;BY', 'LIMIT', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'OR&nbsp;', 'HAVING', 'OFFSET', 'NOT&nbsp;IN', 'IN', 'LIKE', 'NOT&nbsp;LIKE', 'COUNT', 'MAX', 'MIN', 'ON', 'AS', 'AVG', 'SUM', '(', ')'); ?>
-					<?php foreach ($highlight as $bold): 
-						$query['val'] = str_replace($bold, '<strong>'.$bold.'</strong>', $query['val']);
-					 endforeach ?>
+					<?php 
+						$query['val'] = highlight_code($query['val']);
+						$highlight = array('SELECT', 'DISTINCT', 'FROM', 'WHERE', 'AND', 'LEFT&nbsp;JOIN', 'ORDER&nbsp;BY', 'GROUP&nbsp;BY', 'LIMIT', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'OR&nbsp;', 'HAVING', 'OFFSET', 'NOT&nbsp;IN', 'IN', 'LIKE', 'NOT&nbsp;LIKE', 'COUNT', 'MAX', 'MIN', 'ON', 'AS', 'AVG', 'SUM', '(', ')');  
+						foreach ($highlight as $bold): 
+							$query['val'] = str_replace($bold, '<strong>'.$bold.'</strong>', $query['val']);
+						 endforeach 
+					?>
 						<?php echo $query['val']; ?>
 					</td>
 				</tr>
@@ -196,7 +199,7 @@
 	</legend>
 
 	<table style="width:100%;display:none;" id="ci_profiler_httpheaders_table">
-	<?php foreach ($data['http_headers']['headers'] as $key => $val): ?>
+	<?php foreach ($data['http_headers'] as $key => $val): ?>
 		<tr>
 			<td style="vertical-align:top;width:50%;padding:5px;color:#900;background-color:#ddd;">
 				<?php echo $key; ?>&nbsp;&nbsp;
@@ -209,6 +212,25 @@
 	</table>
 	</fieldset>
 
+	<?php if ( isset($data['session_data'])): ?>
+	<fieldset id="ci_profiler_csession" style="border:1px solid #000;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
+	<legend style="color:#000;">&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_session_data'); ?>&nbsp;&nbsp;
+		(<span style="cursor: pointer;" onclick="var s=document.getElementById('ci_profiler_session_data').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='<?php echo $this->CI->lang->line('profiler_section_show'); ?>'?'<?php echo $this->CI->lang->line('profiler_section_hide'); ?>':'<?php echo $this->CI->lang->line('profiler_section_show'); ?>';"><?php echo $this->CI->lang->line('profiler_section_show'); ?></span>)
+	</legend>
+	<table style="width:100%;display:none;" id="ci_profiler_session_data">
+	<?php foreach ($data['session_data'] as $key => $val): ?>
+		<tr>
+			<td style="padding:5px;vertical-align:top;color:#900;background-color:#ddd;">
+				<?php echo $key; ?>
+				&nbsp;&nbsp;</td><td style="padding:5px;color:#000;background-color:#ddd;">
+				<?php echo htmlspecialchars($val); ?>
+			</td>
+		</tr>
+	<?php endforeach ?>
+	</table>
+	</fieldset>
+	<?php endif ?>
+
 	<fieldset id="ci_profiler_config" style="border:1px solid #000;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
 	<legend style="color:#000;">
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_config'); ?>&nbsp;&nbsp;
@@ -218,7 +240,7 @@
 	</legend>
 
 	<table style="width:100%;display:none;" id="ci_profiler_config_table">
-	<?php foreach ($data['config']['configs'] as $key => $val): ?>
+	<?php foreach ($data['config'] as $key => $val): ?>
 		<tr>
 			<td style="padding:5px;vertical-align:top;color:#900;background-color:#ddd;">
 				<?php echo $key; ?>&nbsp;&nbsp;

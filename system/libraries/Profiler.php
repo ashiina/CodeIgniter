@@ -166,9 +166,7 @@ class CI_Profiler {
 			}
 		}
 
-		return array(
-			'profile' => $profile
-		);
+		return $profile;
 	}
 
 	// --------------------------------------------------------------------
@@ -181,7 +179,6 @@ class CI_Profiler {
 	protected function _compile_queries()
 	{
 		$dbs = array();
-		$dbs_formatted = array();
 
 		// Let's determine which databases are currently connected to
 		foreach (get_object_vars($this->CI) as $name => $cobject)
@@ -205,10 +202,8 @@ class CI_Profiler {
 			}
 		}
 
-		// Load the text helper so we can highlight the SQL
-		$this->CI->load->helper('text');
-
 		$count = 0;
+		$dbs_formatted = array();
 
 		foreach ($dbs as $name => $db)
 		{
@@ -222,7 +217,7 @@ class CI_Profiler {
 				{
 					$query = array();
 					$query['time'] = number_format($db->query_times[$key], 4);
-					$query['val'] = highlight_code($val);
+					$query['val'] = $val;
 
 					$dbs_formatted[$name]['queries'][] = $query;
 				}
@@ -232,9 +227,7 @@ class CI_Profiler {
 			$count++;
 		}
 
-		return array(
-			'dbs' => $dbs_formatted
-		);
+		return $dbs_formatted;
 	}
 
 	// --------------------------------------------------------------------
@@ -246,9 +239,7 @@ class CI_Profiler {
 	 */
 	protected function _compile_get()
 	{
-		return array(
-			'get' => $_GET
-		);
+		return $_GET;
 	}
 
 	// --------------------------------------------------------------------
@@ -287,9 +278,7 @@ class CI_Profiler {
 	 */
 	protected function _compile_controller_info()
 	{
-		return array(
-			'info' => $this->CI->router->class.'/'.$this->CI->router->method
-		);
+		return $this->CI->router->class.'/'.$this->CI->router->method;
 	}
 
 	// --------------------------------------------------------------------
@@ -304,9 +293,7 @@ class CI_Profiler {
 	protected function _compile_memory_usage()
 	{
 		$usage = number_format(memory_get_usage());
-		return array(
-			'usage' => $usage
-		);
+		return $usage;
 	}
 
 	// --------------------------------------------------------------------
@@ -327,9 +314,7 @@ class CI_Profiler {
 			$headers[$header] = $val;
 		}
 
-		return array(
-			'headers' => $headers
-		);
+		return $headers;
 	}
 
 	// --------------------------------------------------------------------
@@ -355,9 +340,7 @@ class CI_Profiler {
 			}
 		}
 
-		return array(
-			'configs' => $configs
-		);
+		return $configs;
 	}
 
 	// --------------------------------------------------------------------
@@ -371,25 +354,23 @@ class CI_Profiler {
 	{
 		if ( ! isset($this->CI->session))
 		{
-			return;
+			return array();
 		}
 
-		$output = '<fieldset id="ci_profiler_csession" style="border:1px solid #000;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">'
-			.'<legend style="color:#000;">&nbsp;&nbsp;'.$this->CI->lang->line('profiler_session_data').'&nbsp;&nbsp;(<span style="cursor: pointer;" onclick="var s=document.getElementById(\'ci_profiler_session_data\').style;s.display=s.display==\'none\'?\'\':\'none\';this.innerHTML=this.innerHTML==\''.$this->CI->lang->line('profiler_section_show').'\'?\''.$this->CI->lang->line('profiler_section_hide').'\':\''.$this->CI->lang->line('profiler_section_show').'\';">'.$this->CI->lang->line('profiler_section_show').'</span>)</legend>'
-			.'<table style="width:100%;display:none;" id="ci_profiler_session_data">';
+		$session_data = array();
 
 		foreach ($this->CI->session->userdata() as $key => $val)
 		{
 			if (is_array($val) OR is_object($val))
 			{
-				$val = print_r($val, TRUE);
+				$session_data[$key] = print_r($val, TRUE);
+			} 
+			else {
+				$session_data[$key] = $val;
 			}
-
-			$output .= '<tr><td style="padding:5px;vertical-align:top;color:#900;background-color:#ddd;">'
-				.$key.'&nbsp;&nbsp;</td><td style="padding:5px;color:#000;background-color:#ddd;">'.htmlspecialchars($val)."</td></tr>\n";
 		}
 
-		return $output."</table>\n</fieldset>";
+		return $session_data;
 	}
 
 	// --------------------------------------------------------------------
@@ -413,6 +394,9 @@ class CI_Profiler {
 				$fields_displayed++;
 			}
 		}
+
+		// Load the text helper so we can highlight the SQL
+		$this->CI->load->helper('text');
 
 		$templates_path = VIEWPATH.'profiler'.DIRECTORY_SEPARATOR.'profiler_template';
 		ob_start();
