@@ -86,6 +86,13 @@ class CI_Profiler {
 	 */
 	protected $CI;
 
+	/**
+	 * Profiled data
+	 *
+	 * @var object
+	 */
+	protected $_profile;
+
 	// --------------------------------------------------------------------
 
 	/**
@@ -154,7 +161,7 @@ class CI_Profiler {
 	 */
 	protected function _compile_benchmarks()
 	{
-		$profile = array();
+		$benchmark = array();
 		foreach ($this->CI->benchmark->marker as $key => $val)
 		{
 			// We match the "end" marker so that the list ends
@@ -162,11 +169,11 @@ class CI_Profiler {
 			if (preg_match('/(.+?)_end$/i', $key, $match)
 				&& isset($this->CI->benchmark->marker[$match[1].'_end'], $this->CI->benchmark->marker[$match[1].'_start']))
 			{
-				$profile[$match[1]] = $this->CI->benchmark->elapsed_time($match[1].'_start', $key);
+				$benchmark[$match[1]] = $this->CI->benchmark->elapsed_time($match[1].'_start', $key);
 			}
 		}
 
-		return $profile;
+		$this->_profile['benchmarks'] = $benchmark;
 	}
 
 	// --------------------------------------------------------------------
@@ -187,7 +194,7 @@ class CI_Profiler {
 			{
 				if ($cobject instanceof CI_DB)
 				{
-					$dbs[get_class($this->CI).':$'.$name] = $cobject;
+					$dbs[get_class($this->CI).':$'.$name]['db'] = $cobject;
 				}
 				elseif ($cobject instanceof CI_Model)
 				{
@@ -195,7 +202,7 @@ class CI_Profiler {
 					{
 						if ($mobject instanceof CI_DB)
 						{
-							$dbs[get_class($cobject).':$'.$mname] = $mobject;
+							$dbs[get_class($cobject).':$'.$mname]['db'] = $mobject;
 						}
 					}
 				}
@@ -203,31 +210,30 @@ class CI_Profiler {
 		}
 
 		$count = 0;
-		$dbs_formatted = array();
 
-		foreach ($dbs as $name => $db)
+		foreach ($dbs as $name => $row)
 		{
-			$dbs_formatted[$name]['db'] = $db;
-			$dbs_formatted[$name]['hide_queries'] = (count($db->queries) > $this->_query_toggle_count) ? TRUE : FALSE;
-			$dbs_formatted[$name]['total_time'] = number_format(array_sum($db->query_times), 4).' '.$this->CI->lang->line('profiler_seconds');
+			$db = $row['db'];
+			$dbs[$name]['hide_queries'] = (count($row['db']->queries) > $this->_query_toggle_count) ? TRUE : FALSE;
+			$dbs[$name]['total_time'] = number_format(array_sum($row['db']->query_times), 4);
 
-			if (count($db->queries) > 0)
+			if (count($row['db']->queries) > 0)
 			{
-				foreach ($db->queries as $key => $val)
+				foreach ($row['db']->queries as $key => $val)
 				{
 					$query = array();
-					$query['time'] = number_format($db->query_times[$key], 4);
+					$query['time'] = number_format($row['db']->query_times[$key], 4);
 					$query['val'] = $val;
 
-					$dbs_formatted[$name]['queries'][] = $query;
+					$dbs[$name]['queries'][] = $query;
 				}
 			}
 
-			$dbs_formatted[$name]['count'] = $count;
+			$dbs[$name]['count'] = $count;
 			$count++;
 		}
 
-		return $dbs_formatted;
+		$this->_profile['queries'] = $dbs;
 	}
 
 	// --------------------------------------------------------------------
@@ -239,7 +245,7 @@ class CI_Profiler {
 	 */
 	protected function _compile_get()
 	{
-		return $_GET;
+		$this->_profile['get'] = $_GET;
 	}
 
 	// --------------------------------------------------------------------
@@ -251,10 +257,8 @@ class CI_Profiler {
 	 */
 	protected function _compile_post()
 	{
-		return array(
-			'post' => $_POST,
-			'files' => $_FILES
-		);
+		$this->_profile['post'] = $_POST;
+		$this->_profile['files'] = $_FILES;
 	}
 
 	// --------------------------------------------------------------------
@@ -278,7 +282,8 @@ class CI_Profiler {
 	 */
 	protected function _compile_controller_info()
 	{
-		return $this->CI->router->class.'/'.$this->CI->router->method;
+		$info = $this->CI->router->class.'/'.$this->CI->router->method;
+		$this->_profile['controller_info'] = $info;
 	}
 
 	// --------------------------------------------------------------------
@@ -293,7 +298,7 @@ class CI_Profiler {
 	protected function _compile_memory_usage()
 	{
 		$usage = number_format(memory_get_usage());
-		return $usage;
+		$this->_profile['memory_usage'] = $usage;
 	}
 
 	// --------------------------------------------------------------------
@@ -314,7 +319,7 @@ class CI_Profiler {
 			$headers[$header] = $val;
 		}
 
-		return $headers;
+		$this->_profile['http_headers'] = $headers;
 	}
 
 	// --------------------------------------------------------------------
@@ -340,7 +345,7 @@ class CI_Profiler {
 			}
 		}
 
-		return $configs;
+		$this->_profile['config'] = $configs;
 	}
 
 	// --------------------------------------------------------------------
@@ -354,7 +359,8 @@ class CI_Profiler {
 	{
 		if ( ! isset($this->CI->session))
 		{
-			return array();
+			$this->_profile['session_data'] = array();
+			return;
 		}
 
 		$session_data = array();
@@ -370,7 +376,7 @@ class CI_Profiler {
 			}
 		}
 
-		return $session_data;
+		$this->_profile['session_data'] = $session_data;
 	}
 
 	// --------------------------------------------------------------------
@@ -383,14 +389,13 @@ class CI_Profiler {
 	public function run()
 	{
 		$fields_displayed = 0;
-		$data = [];
 
 		foreach ($this->_available_sections as $section)
 		{
 			if ($this->_compile_{$section} !== FALSE)
 			{
 				$func = '_compile_'.$section;
-				$data[$section] = $this->{$func}();
+				$this->{$func}();
 				$fields_displayed++;
 			}
 		}
@@ -398,6 +403,8 @@ class CI_Profiler {
 		// Load the text helper so we can highlight the SQL
 		$this->CI->load->helper('text');
 
+		// Output the data on a view file. The view file will use $data
+		$data = $this->_profile;
 		$templates_path = VIEWPATH.'profiler'.DIRECTORY_SEPARATOR.'profiler_template';
 		ob_start();
 		include($templates_path.'.php');

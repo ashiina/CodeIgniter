@@ -66,12 +66,12 @@
 	<legend style="color:#009900;">
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_post_data'); ?>&nbsp;&nbsp;
 	</legend>
-	<?php if (count($data['post']['post']) === 0 && count($data['post']['files']) === 0): ?> 
+	<?php if (count($data['post']) === 0 && count($data['files']) === 0): ?> 
 	<div style="color:#009900;font-weight:normal;padding:4px 0 4px 0;">
 		<?php echo $this->CI->lang->line('profiler_no_get'); ?>
 	</div>
 	<?php else: ?>
-		<?php foreach ($data['post']['post'] as $key => $val): ?>
+		<?php foreach ($data['post'] as $key => $val): ?>
 			<?php is_int($key) OR $key = "'".$key."'"; ?>
 		<tr>
 			<td style="width:50%;padding:5px;color:#000;background-color:#ddd;">
@@ -86,7 +86,7 @@
 			</td>
 		</tr>
 		<?php endforeach ?>
-		<?php foreach ($data['post']['files'] as $key => $val): ?>
+		<?php foreach ($data['files'] as $key => $val): ?>
 			<?php is_int($key) OR $key = "'".$key."'"; ?>
 		<tr>
 			<td style="width:50%;padding:5px;color:#000;background-color:#ddd;">
@@ -144,7 +144,7 @@
 				<?php echo $this->CI->lang->line('profiler_database'); ?>:&nbsp; 
 				<?php echo $row['db']->database; ?> (<?php echo $name; ?>)&nbsp;&nbsp;&nbsp;
 				<?php echo $this->CI->lang->line('profiler_queries'); ?>: 
-				<?php echo count($row['db']->queries); ?> (<?php echo $row['total_time']; ?>)&nbsp;&nbsp;
+				<?php echo count($row['db']->queries); ?> (<?php echo $row['total_time']; ?> <?php echo $this->CI->lang->line('profiler_seconds'); ?>)&nbsp;&nbsp;
 				<?php 
 				$current_query_state;
 				$toggled_query_state;
