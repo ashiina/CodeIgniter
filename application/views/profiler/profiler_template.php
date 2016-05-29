@@ -124,7 +124,7 @@
 	</div>
 	</fieldset>
 
-	<?php if (count($dbs) === 0): ?>
+	<?php if (count($data['queries']['dbs']) === 0): ?>
 	<fieldset id="ci_profiler_queries" style="border:1px solid #0000FF;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
 	<legend style="color:#0000FF;">
 		&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_queries'); ?>&nbsp;&nbsp;
@@ -138,8 +138,51 @@
 	</table>
 	</fieldset>
 	<?php else: ?>
-		<?php foreach ($dbs as $name => $db): ?>
-			
+		<?php foreach ($data['queries']['dbs'] as $name => $row): ?>
+		<fieldset style="border:1px solid #0000FF;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
+			<legend style="color:#0000FF;">&nbsp;&nbsp;
+				<?php echo $this->CI->lang->line('profiler_database'); ?>:&nbsp; 
+				<?php echo $row['db']->database; ?> (<?php echo $name; ?>)&nbsp;&nbsp;&nbsp;
+				<?php echo $this->CI->lang->line('profiler_queries'); ?>: 
+				<?php echo count($row['db']->queries); ?> (<?php echo $row['total_time']; ?>)&nbsp;&nbsp;
+				<?php 
+				$current_query_state;
+				$toggled_query_state;
+				if ($row['hide_queries']) { 
+					$current_query_state = $this->CI->lang->line('profiler_section_hide'); 
+					$toggled_query_state = $this->CI->lang->line('profiler_section_show'); 
+				} else {
+					$current_query_state = $this->CI->lang->line('profiler_section_show'); 
+					$toggled_query_state = $this->CI->lang->line('profiler_section_hide'); 
+				}
+				?>
+				(<span style="cursor: pointer;" onclick="var s=document.getElementById('ci_profiler_queries_db_<?php echo $row['count']; ?>').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='<?php echo $toggled_query_state; ?>'?'<?php echo $current_query_state; ?>':'<?php echo $toggled_query_state; ?>';"><?php echo $toggled_query_state; ?></span>)
+			</legend>
+			<table style="width:100%;<?php if ($row['hide_queries']): echo "display:none"; endif ?>" id="ci_profiler_queries_db_<?php echo $row['count']; ?>">
+			<?php if (count($row['db']->queries) === 0): ?>
+				<tr>
+					<td style="width:100%;color:#0000FF;font-weight:normal;background-color:#eee;padding:5px;">
+						<?php echo $this->CI->lang->line('profiler_no_queries'); ?>
+					</td>
+				</tr>
+			<?php else: ?>
+				<?php foreach ($row['queries'] as $query): ?>
+				<tr>
+					<td style="padding:5px;vertical-align:top;width:1%;color:#900;font-weight:normal;background-color:#ddd;">
+						<?php echo $query['time']; ?>
+					</td>
+					<td style="padding:5px;color:#000;font-weight:normal;background-color:#ddd;">
+					<?php $highlight = array('SELECT', 'DISTINCT', 'FROM', 'WHERE', 'AND', 'LEFT&nbsp;JOIN', 'ORDER&nbsp;BY', 'GROUP&nbsp;BY', 'LIMIT', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'OR&nbsp;', 'HAVING', 'OFFSET', 'NOT&nbsp;IN', 'IN', 'LIKE', 'NOT&nbsp;LIKE', 'COUNT', 'MAX', 'MIN', 'ON', 'AS', 'AVG', 'SUM', '(', ')'); ?>
+					<?php foreach ($highlight as $bold): 
+						$query['val'] = str_replace($bold, '<strong>'.$bold.'</strong>', $query['val']);
+					 endforeach ?>
+						<?php echo $query['val']; ?>
+					</td>
+				</tr>
+				<?php endforeach ?>
+			<?php endif ?>
+			</table>
+		</fieldset>
 		<?php endforeach ?>
 
 	<?php endif ?>
