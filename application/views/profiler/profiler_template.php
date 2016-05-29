@@ -32,17 +32,17 @@
 	</div>
 	<?php else: ?>
 		<?php foreach ($data['get'] as $key => $val): ?>
-			<?php is_int($key) OR $key = "'".$key."'"; ?>
+			<?php is_int($key) OR $key = "'".htmlspecialchars($key, ENT_QUOTES, config_item('charset'))."'"; 
+					$val = (is_array($val) OR is_object($val))
+					? '<pre>'.htmlspecialchars(print_r($val, TRUE), ENT_QUOTES, config_item('charset'))
+					: htmlspecialchars($val, ENT_QUOTES, config_item('charset'));
+			?>
 		<tr>
 			<td style="width:50%;color:#000;background-color:#ddd;padding:5px;">
 				&#36;_GET['<?php echo $key; ?>']&nbsp;&nbsp; 
 			</td>
 			<td style="width:50%;padding:5px;color:#cd6e00;font-weight:normal;background-color:#ddd;">
-			<?php if (is_array($val) OR is_object($val)): ?>
-				<pre><?php echo htmlspecialchars(stripslashes(print_r($val, TRUE))); ?></pre>
-			<?php else: ?>
-				<?php echo htmlspecialchars(stripslashes($val)); ?>
-			<?php endif ?>
+				<?php echo $val; ?>
 			</td>
 		</tr>
 		<?php endforeach ?>
@@ -72,30 +72,32 @@
 	</div>
 	<?php else: ?>
 		<?php foreach ($data['post'] as $key => $val): ?>
-			<?php is_int($key) OR $key = "'".$key."'"; ?>
+			<?php is_int($key) OR $key = "'".htmlspecialchars($key, ENT_QUOTES, config_item('charset'))."'";
+					$val = (is_array($val) OR is_object($val))
+					? '<pre>'.htmlspecialchars(print_r($val, TRUE), ENT_QUOTES, config_item('charset'))
+					: htmlspecialchars($val, ENT_QUOTES, config_item('charset'));
+			?>
 		<tr>
 			<td style="width:50%;padding:5px;color:#000;background-color:#ddd;">
 				&#36;_POST['<?php echo $key; ?>']&nbsp;&nbsp; 
 			</td>
 			<td style="width:50%;padding:5px;color:#009900;font-weight:normal;background-color:#ddd;">
-			<?php if (is_array($val) OR is_object($val)): ?>
-				<pre><?php echo htmlspecialchars(stripslashes(print_r($val, TRUE))); ?></pre>
-			<?php else: ?>
-				<?php echo htmlspecialchars(stripslashes($val)); ?>
-			<?php endif ?>
+				<?php echo $val; ?>
 			</td>
 		</tr>
 		<?php endforeach ?>
 		<?php foreach ($data['files'] as $key => $val): ?>
-			<?php is_int($key) OR $key = "'".$key."'"; ?>
+			<?php is_int($key) OR $key = "'".htmlspecialchars($key, ENT_QUOTES, config_item('charset'))."'";
+					$val = (is_array($val) OR is_object($val))
+					? '<pre>'.htmlspecialchars(print_r($val, TRUE), ENT_QUOTES, config_item('charset'))
+					: htmlspecialchars($val, ENT_QUOTES, config_item('charset'));
+			?>
 		<tr>
 			<td style="width:50%;padding:5px;color:#000;background-color:#ddd;">
 				&#36;_FILES['<?php echo $key; ?>']&nbsp;&nbsp; 
 			</td>
 			<td style="width:50%;padding:5px;color:#009900;font-weight:normal;background-color:#ddd;">
-			<?php if (is_array($val) OR is_object($val)): ?>
-				<pre><?php echo htmlspecialchars(stripslashes(print_r($val, TRUE))); ?></pre>
-			<?php endif ?>
+				<?php echo $val; ?>
 			</td>
 		</tr>
 		<?php endforeach ?>
@@ -205,14 +207,14 @@
 				<?php echo $key; ?>&nbsp;&nbsp;
 			</td>
 			<td style="width:50%;padding:5px;color:#000;background-color:#ddd;">
-				<?php echo $val; ?>
+				<?php echo htmlspecialchars($val, ENT_QUOTES, config_item('charset')); ?>
 			</td>
 		</tr>
 	<?php endforeach ?>
 	</table>
 	</fieldset>
 
-	<?php if ( isset($data['session_data'])): ?>
+	<?php if ( count($data['session_data']) > 0): ?>
 	<fieldset id="ci_profiler_csession" style="border:1px solid #000;padding:6px 10px 10px 10px;margin:20px 0 20px 0;background-color:#eee;">
 	<legend style="color:#000;">&nbsp;&nbsp;<?php echo $this->CI->lang->line('profiler_session_data'); ?>&nbsp;&nbsp;
 		(<span style="cursor: pointer;" onclick="var s=document.getElementById('ci_profiler_session_data').style;s.display=s.display=='none'?'':'none';this.innerHTML=this.innerHTML=='<?php echo $this->CI->lang->line('profiler_section_show'); ?>'?'<?php echo $this->CI->lang->line('profiler_section_hide'); ?>':'<?php echo $this->CI->lang->line('profiler_section_show'); ?>';"><?php echo $this->CI->lang->line('profiler_section_show'); ?></span>)
